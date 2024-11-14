@@ -1,21 +1,33 @@
 import { useState } from "react";
-// import { useAuth } from "../../context/AuthContext";
+import { apiLogin } from "../../services/Auth";  
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  // const { handleLogin } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleLogin = async (email, password) => {
     try {
-      await handleLogin(email, password);
+      const response = await apiLogin({ email, password }); // Call the API with the payload
+      console.log("Login successful:", response.data);
+      
+      // Save user data to localStorage or context (for session management)
+      localStorage.setItem("user", JSON.stringify(response.data));
+      
       setError(""); // Clear error on success
-    } catch {
+      // Redirect or navigate to a different page if login succeeds
+      navigate('/')
+    } catch (err) {
+      console.error("Login error:", err);
       setError("Invalid email or password!");
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await handleLogin(email, password);
   };
 
   return (

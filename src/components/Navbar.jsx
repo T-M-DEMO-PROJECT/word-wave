@@ -1,15 +1,32 @@
-// src/components/Navbar.jsx
 import { Link, useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
-// import { AuthContext } from '../context/AuthContext'; // Import AuthContext
+import { useState, useEffect } from 'react';
+import { apiLogout } from '../services/Auth';
 
 function Navbar() {
-  // const { user, logout } = useContext(AuthContext); // Get user and logout function from context
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout(); // Call logout function to clear the user data
-    navigate('/'); // Redirect to the homepage or login page after logout
+  useEffect(() => {
+    const loggedInUser = localStorage.getItem('user');
+    if (loggedInUser) {
+      setUser(JSON.parse(loggedInUser));
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await apiLogout();
+      localStorage.clear();
+      sessionStorage.clear();
+      setUser(null);
+      setTimeout(() => {
+        navigate('/login', { replace: true });
+      }, 100);
+    } catch (err) {
+      console.error("Logout failed:", err);
+      const errorMessage = err.response?.data?.message || "Logout failed. Please try again.";
+      alert(errorMessage);
+    }
   };
 
   return (
@@ -21,19 +38,21 @@ function Navbar() {
         <li><Link to="/streaks">Streaks</Link></li>
         <li><Link to="/vocabulary">Vocabulary</Link></li>
 
-        {/* Conditional rendering based on whether the user is logged in */}
-        {/* {!user ? ( */}
-          <>
-            <li><Link to="/signup" className="text-white">Sign Up</Link></li>
-            <li><Link to="/login" className="text-white">Login</Link></li>
-          </>
-        {/* ) : ( */}
+        {user ? (
           <li>
-            <button onClick={handleLogout} className="text-white bg-red-500 p-2 rounded">
+            <button
+              onClick={handleLogout}
+              className="text-white bg-red-500 p-2 rounded"
+            >
               Logout
             </button>
           </li>
-        {/* )} */}
+        ) : (
+          <>
+            <li><Link to="/signup">Sign Up</Link></li>
+            <li><Link to="/login">Login</Link></li>
+          </>
+        )}
       </ul>
     </nav>
   );

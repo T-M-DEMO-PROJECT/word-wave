@@ -1,7 +1,7 @@
-// src/components/DailyVocabulary.jsx
 import React, { useState, useEffect } from 'react';
-import VocabularyWord from './VocabularyWord'; // Import the child component
+import VocabularyWord from './VocabularyWord'; // Correct path to child component
 
+// Word data array
 const words = [
   {
     word: 'Altruism',
@@ -22,10 +22,11 @@ const words = [
   // Add more words as needed
 ];
 
-function DailyVocabulary() {
+const DailyVocabulary = () => {
   const [todayWord, setTodayWord] = useState(null);
 
   useEffect(() => {
+    // Calculate today's word based on the current date
     const todayIndex = new Date().getDate() % words.length;
     setTodayWord(words[todayIndex]);
   }, []);
@@ -36,10 +37,10 @@ function DailyVocabulary() {
 
   return (
     <div className="p-6 bg-gray-100 rounded-md shadow-lg max-w-md mx-auto">
-      <h2 className="text-2xl font-bold text-blue-600 mb-2">Word of the Day</h2>
+      <h2 className="text-2xl font-bold text-blue-600 mb-4">Word of the Day</h2>
       <VocabularyWord wordData={todayWord} />
     </div>
   );
-}
+};
 
 export default DailyVocabulary;

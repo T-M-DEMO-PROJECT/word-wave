@@ -1,10 +1,10 @@
 // src/components/Auth/SignUp.jsx
 import { useState } from "react";
-import { useAuth } from "../../context/AuthContext"; // Import AuthContext
+// import { useAuth } from "../../context/AuthContext"; // Import AuthContext
 import { useNavigate } from "react-router-dom"; // Import useNavigate for redirection
 
 const SignUp = () => {
-  const { handleSignUp } = useAuth(); // Access the handleSignUp method
+  // const { handleSignUp } = useAuth(); // Access the handleSignUp method
   const navigate = useNavigate(); // Initialize navigate function
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

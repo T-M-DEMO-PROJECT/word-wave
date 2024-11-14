@@ -1,7 +1,16 @@
-// src/pages/Home.jsx
-function Home() {
-    return <h1>Welcome to the Home Page</h1>;
-  }
-  
-  export default Home;
-  
+import React from 'react'
+import ProgressTracker from '../components/ProgressTracker'
+import Navbar from '../components/Navbar'
+
+const Home = () => {
+  return (
+    <>
+    <Navbar/>
+    <div>Home</div>
+    <ProgressTracker/>
+    </>
+    
+  )
+}
+
+export default Home

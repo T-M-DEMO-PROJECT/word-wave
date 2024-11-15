@@ -1,6 +1,6 @@
 'use client';
 import { useState } from "react";
-import { apiSignUp } from "../../services/Auth"; // Ensure this points to the correct service
+import { apiSignUp } from "../../services/Auth"; 
 import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
@@ -9,7 +9,7 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [admin, setAdmin] = useState(false); // New state for admin checkbox
+  const [admin, setAdmin] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,7 +28,7 @@ const SignUp = () => {
       const payload = { name, email, password, admin };
       const response = await apiSignUp(payload);
       console.log("Sign up successful:", response);
-      navigate("/"); // Redirect to the homepage or desired path
+      navigate("/");
     } catch (err) {
       console.error("Sign up error:", err);
       setError("Failed to sign up. Please try again.");
@@ -38,15 +38,15 @@ const SignUp = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-lg shadow-md w-full max-w-md"
+        className="bg-gray-900 p-8 rounded-xl shadow-2xl w-full max-w-lg text-white"
       >
-        <h2 className="text-2xl font-bold mb-4 text-center">Sign Up</h2>
+        <h2 className="text-3xl font-extrabold mb-6 text-center">Sign Up</h2>
 
         {error && (
-          <div className="text-red-500 text-center mb-4" role="alert">
+          <div className="bg-red-500 text-white text-center p-3 rounded mb-4">
             {error}
           </div>
         )}
@@ -58,10 +58,9 @@ const SignUp = () => {
           <input
             type="text"
             id="name"
-            name="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 p-2 w-full border rounded-md"
+            className="mt-2 p-3 w-full bg-gray-800 text-white border border-gray-700 rounded-md focus:ring-2 focus:ring-pink-500"
             required
           />
         </div>
@@ -73,10 +72,9 @@ const SignUp = () => {
           <input
             type="email"
             id="email"
-            name="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 p-2 w-full border rounded-md"
+            className="mt-2 p-3 w-full bg-gray-800 text-white border border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500"
             required
           />
         </div>
@@ -88,10 +86,9 @@ const SignUp = () => {
           <input
             type="password"
             id="password"
-            name="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 p-2 w-full border rounded-md"
+            className="mt-2 p-3 w-full bg-gray-800 text-white border border-gray-700 rounded-md focus:ring-2 focus:ring-purple-500"
             required
             minLength="8"
           />
@@ -104,10 +101,9 @@ const SignUp = () => {
           <input
             type="password"
             id="confirmPassword"
-            name="confirmPassword"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="mt-1 p-2 w-full border rounded-md"
+            className="mt-2 p-3 w-full bg-gray-800 text-white border border-gray-700 rounded-md focus:ring-2 focus:ring-pink-500"
             required
             minLength="8"
           />
@@ -119,7 +115,7 @@ const SignUp = () => {
             id="admin"
             checked={admin}
             onChange={(e) => setAdmin(e.target.checked)}
-            className="mr-2"
+            className="mr-2 text-pink-500 focus:ring-pink-500"
           />
           <label htmlFor="admin" className="text-sm font-medium">
             Register as Admin
@@ -128,7 +124,7 @@ const SignUp = () => {
 
         <button
           type="submit"
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 w-full disabled:opacity-50"
+          className="w-full py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 hover:from-purple-500 hover:to-pink-500 transition-all duration-300 font-semibold"
           disabled={isLoading}
         >
           {isLoading ? "Signing Up..." : "Sign Up"}

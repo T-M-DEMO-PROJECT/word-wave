@@ -55,19 +55,19 @@ const AudiobookDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F85339]"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center text-red-500 p-6">
+      <div className="text-center text-red-500 p-6 bg-[#C6CEC9]">
         <p>{error}</p>
-        <button 
+        <button
           onClick={() => navigate('/')}
-          className="mt-4 text-blue-500 hover:underline"
+          className="mt-4 text-[#F85339] hover:underline"
         >
           Return to Library
         </button>
@@ -81,18 +81,15 @@ const AudiobookDetail = () => {
 
   const togglePlayPause = () => {
     setIsPlaying(!isPlaying);
-    // Add actual audio playing logic here
   };
 
   const toggleBookmark = () => {
     setIsBookmarked(!isBookmarked);
-    // Add actual bookmark saving logic here
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Back Button */}
-      <button 
+    <div className="max-w-4xl mx-auto p-6 bg-[#C6CEC9]">
+      <button
         onClick={() => navigate('/')}
         className="flex items-center text-gray-600 hover:text-gray-800 mb-6"
       >
@@ -101,33 +98,29 @@ const AudiobookDetail = () => {
       </button>
 
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Header Section */}
         <div className="md:flex p-6">
-          {/* Cover Image */}
           <div className="flex-shrink-0 md:w-1/3">
-            <img 
-              src={audiobook.coverImage} 
-              alt={audiobook.title} 
-              className="w-full h-auto rounded-lg shadow-md" 
+            <img
+              src={audiobook.coverImage}
+              alt={audiobook.title}
+              className="w-full h-auto rounded-lg shadow-md"
             />
           </div>
 
-          {/* Book Details */}
           <div className="md:ml-6 md:w-2/3 mt-4 md:mt-0">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">{audiobook.title}</h1>
+                <h1 className="text-3xl font-bold text-[#333]">{audiobook.title}</h1>
                 <h2 className="text-xl text-gray-600 mt-2">By {audiobook.author}</h2>
               </div>
-              <button 
+              <button
                 onClick={toggleBookmark}
-                className="text-gray-500 hover:text-yellow-500"
+                className="text-gray-500 hover:text-[#F85339]"
               >
-                {isBookmarked ? <BsBookmarkFill className="text-yellow-500" /> : <BsBookmarkPlus />}
+                {isBookmarked ? <BsBookmarkFill /> : <BsBookmarkPlus />}
               </button>
             </div>
 
-            {/* Info Grid */}
             <div className="grid grid-cols-2 gap-4 mt-6">
               <div className="flex items-center text-gray-600">
                 <BiTime className="mr-2" />
@@ -147,31 +140,28 @@ const AudiobookDetail = () => {
               </div>
             </div>
 
-            {/* Description */}
             <p className="text-gray-700 mt-6">{audiobook.description}</p>
           </div>
         </div>
 
-        {/* Progress Section */}
         <div className="p-6 border-t border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Your Progress</h3>
           <div className="w-full bg-gray-200 rounded-full h-4">
             <div
-              className="bg-blue-500 h-4 rounded-full transition-all duration-300"
+              className="bg-[#F85339] h-4 rounded-full transition-all duration-300"
               style={{ width: `${audiobook.progress}%` }}
             ></div>
           </div>
           <p className="text-gray-600 mt-2">{audiobook.progress}% completed</p>
         </div>
 
-        {/* Chapters Section */}
         <div className="p-6 border-t border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Chapters</h3>
           <div className="space-y-3">
             {audiobook.chapters.map((chapter, index) => (
-              <div 
+              <div
                 key={index}
-                className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer"
+                className="flex justify-between items-center p-3 bg-[#F4F4F4] rounded-lg hover:bg-gray-100"
               >
                 <span className="text-gray-800">{chapter.title}</span>
                 <span className="text-gray-600">{chapter.duration}</span>
@@ -180,12 +170,11 @@ const AudiobookDetail = () => {
           </div>
         </div>
 
-        {/* Vocabulary Section */}
         <div className="p-6 border-t border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Vocabulary from this Book</h3>
           <div className="grid gap-4">
             {audiobook.vocabulary.map((word, index) => (
-              <div key={index} className="p-4 bg-gray-50 rounded-lg">
+              <div key={index} className="p-4 bg-[#F4F4F4] rounded-lg">
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-semibold text-gray-800">{word.word}</h4>
@@ -199,28 +188,18 @@ const AudiobookDetail = () => {
         </div>
       </div>
 
-      {/* Fixed Player Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#C6CEC9] p-4 shadow-lg">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <button
               onClick={togglePlayPause}
-              className="w-12 h-12 flex items-center justify-center bg-blue-500 text-white rounded-full hover:bg-blue-600"
+              className="bg-[#F85339] hover:bg-[#d84734] text-white p-3 rounded-full shadow-lg transition"
             >
               {isPlaying ? <FaPause /> : <FaPlay />}
             </button>
-            <div className="ml-4">
-              <div className="text-gray-800 font-medium">{audiobook.title}</div>
-              <div className="text-gray-600 text-sm">{audiobook.author}</div>
-            </div>
+            <span className="text-gray-800 ml-4">Playing {audiobook.title}</span>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <MdVolumeUp className="text-gray-600 text-xl" />
-            <div className="w-24 h-2 bg-gray-200 rounded-full">
-              <div className="w-1/2 h-full bg-blue-500 rounded-full"></div>
-            </div>
-          </div>
+          <MdVolumeUp className="text-gray-600 text-xl" />
         </div>
       </div>
     </div>

@@ -13,6 +13,7 @@ const Dashboard = () => {
     wordsLearned: 0,
     streak: 0
   });
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -45,6 +46,19 @@ const Dashboard = () => {
     fetchUserData();
   }, []);
 
+  const showAchievementNotification = (achievement) => {
+    setNotification({
+      title: 'New Achievement!',
+      message: achievement.message,
+      type: 'achievement'
+    });
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 5000);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
@@ -55,6 +69,19 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F] text-white">
+      {/* Notification Toast */}
+      {notification && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -50 }}
+          className="fixed top-4 right-4 z-50 bg-purple-500 text-white px-6 py-3 rounded-lg shadow-lg"
+        >
+          <h4 className="font-bold">{notification.title}</h4>
+          <p className="text-sm">{notification.message}</p>
+        </motion.div>
+      )}
+
       {/* Navbar */}
       <nav className="bg-black/40 backdrop-blur-xl border-b border-white/5">
         <div className="container mx-auto flex justify-between items-center p-4">

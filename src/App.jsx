@@ -7,7 +7,7 @@ import AudiobookDetail from './components/AudiobookDetail';
 import AudiobookList from './components/AudiobookList';
 import AudiobookPage from './components/AudiobookPage';
 import DailyVocabulary from './components/DailyVocabulary';
-import UserProfile from './components/UserProfile';
+import UserProfile from './components/UserProfile/UserProfile';
 import Dashboard from './components/Dashboard/Dashboard';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -66,9 +66,13 @@ function App() {
       },
       {
         path:"profile",
-        element: <UserProfile/>,
+        element: (
+          <ProtectedRoute>
+            <UserProfile/>
+          </ProtectedRoute>
+        ),
         errorElement: <ErrorBoundary />
-      }
+      },
     ],
     {
       future: {

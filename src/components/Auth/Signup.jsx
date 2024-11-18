@@ -1,7 +1,7 @@
 'use client';
 import { useState } from "react";
-import { apiSignUp } from "../../services/Auth"; 
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -25,13 +25,34 @@ const SignUp = () => {
     }
 
     try {
-      const payload = { name, email, password, admin };
-      const response = await apiSignUp(payload);
-      console.log("Sign up successful:", response);
-      navigate("/");
+      const response = await axios.post('https://wordwave-app-backend.onrender.com/users/register', 
+        {
+          name,
+          email,
+          password,
+          admin: admin.toString()
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log("Sign up successful:", response.data);
+      navigate("/login");
+      
     } catch (err) {
-      console.error("Sign up error:", err);
-      setError("Failed to sign up. Please try again.");
+      console.error("Sign up error details:", err.response?.data);
+      
+      if (err.response) {
+        const errorMessage = err.response.data.message || err.response.data.error || 'Failed to sign up';
+        setError(errorMessage);
+      } else if (err.request) {
+        setError("No response from server. Please try again.");
+      } else {
+        setError("Failed to make request. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }

@@ -17,13 +17,14 @@ const AudiobookDetail = () => {
   useEffect(() => {
     const fetchAudiobookDetails = async () => {
       try {
-        // Simulated API call - Replace with your actual API
+        // Simulated API call
         const data = {
           id: id,
           title: "The Great Gatsby",
           author: "F. Scott Fitzgerald",
           coverImage: "https://via.placeholder.com/300x400",
-          description: "The Great Gatsby is a 1925 novel by American writer F. Scott Fitzgerald. Set in the Jazz Age on Long Island, the novel depicts narrator Nick Carraway's interactions with mysterious millionaire Jay Gatsby and Gatsby's obsession to reunite with his former lover, Daisy Buchanan.",
+          description:
+            "The Great Gatsby is a 1925 novel by American writer F. Scott Fitzgerald. Set in the Jazz Age on Long Island...",
           duration: "4:25:30",
           progress: 35,
           genre: "Classic",
@@ -33,18 +34,17 @@ const AudiobookDetail = () => {
           vocabulary: [
             { word: "Ostentatious", meaning: "Characterized by vulgar or pretentious display", context: "Chapter 3" },
             { word: "Nebulous", meaning: "Unclear, vague, or ill-defined", context: "Chapter 5" },
-            { word: "Laconic", meaning: "Using few words; concise", context: "Chapter 2" }
+            { word: "Laconic", meaning: "Using few words; concise", context: "Chapter 2" },
           ],
           chapters: [
             { title: "Chapter 1: The Beginning", duration: "30:15" },
             { title: "Chapter 2: The Encounter", duration: "25:45" },
-            { title: "Chapter 3: The Party", duration: "35:20" }
-          ]
+            { title: "Chapter 3: The Party", duration: "35:20" },
+          ],
         };
         setAudiobook(data);
       } catch (err) {
         setError("Failed to load audiobook details");
-        console.error(err);
       } finally {
         setIsLoading(false);
       }
@@ -75,23 +75,14 @@ const AudiobookDetail = () => {
     );
   }
 
-  if (!audiobook) {
-    return <div className="text-center text-gray-500 p-6">No Audiobook Found</div>;
-  }
-
-  const togglePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const toggleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-  };
+  const togglePlayPause = () => setIsPlaying(!isPlaying);
+  const toggleBookmark = () => setIsBookmarked(!isBookmarked);
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-[#C6CEC9]">
       <button
         onClick={() => navigate('/')}
-        className="flex items-center text-gray-600 hover:text-gray-800 mb-6"
+        className="flex items-center text-[#F85339] hover:text-[#d84734] mb-6"
       >
         <FaArrowLeft className="mr-2" />
         Back to Library
@@ -110,7 +101,7 @@ const AudiobookDetail = () => {
           <div className="md:ml-6 md:w-2/3 mt-4 md:mt-0">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-3xl font-bold text-[#333]">{audiobook.title}</h1>
+                <h1 className="text-3xl font-bold text-gray-800">{audiobook.title}</h1>
                 <h2 className="text-xl text-gray-600 mt-2">By {audiobook.author}</h2>
               </div>
               <button
@@ -121,23 +112,14 @@ const AudiobookDetail = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              <div className="flex items-center text-gray-600">
+            <div className="grid grid-cols-2 gap-4 mt-6 text-gray-600">
+              <div className="flex items-center">
                 <BiTime className="mr-2" />
                 <span>{audiobook.duration}</span>
               </div>
-              <div className="flex items-center text-gray-600">
-                <span className="mr-2">Genre:</span>
-                <span>{audiobook.genre}</span>
-              </div>
-              <div className="flex items-center text-gray-600">
-                <span className="mr-2">Rating:</span>
-                <span>{audiobook.rating}/5</span>
-              </div>
-              <div className="flex items-center text-gray-600">
-                <span className="mr-2">Listeners:</span>
-                <span>{audiobook.totalListeners.toLocaleString()}</span>
-              </div>
+              <div>Genre: {audiobook.genre}</div>
+              <div>Rating: {audiobook.rating}/5</div>
+              <div>Listeners: {audiobook.totalListeners.toLocaleString()}</div>
             </div>
 
             <p className="text-gray-700 mt-6">{audiobook.description}</p>
@@ -169,36 +151,17 @@ const AudiobookDetail = () => {
             ))}
           </div>
         </div>
-
-        <div className="p-6 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Vocabulary from this Book</h3>
-          <div className="grid gap-4">
-            {audiobook.vocabulary.map((word, index) => (
-              <div key={index} className="p-4 bg-[#F4F4F4] rounded-lg">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold text-gray-800">{word.word}</h4>
-                    <p className="text-gray-600 mt-1">{word.meaning}</p>
-                  </div>
-                  <span className="text-sm text-gray-500">{word.context}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-[#C6CEC9] p-4 shadow-lg">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <button
-              onClick={togglePlayPause}
-              className="bg-[#F85339] hover:bg-[#d84734] text-white p-3 rounded-full shadow-lg transition"
-            >
-              {isPlaying ? <FaPause /> : <FaPlay />}
-            </button>
-            <span className="text-gray-800 ml-4">Playing {audiobook.title}</span>
-          </div>
+          <button
+            onClick={togglePlayPause}
+            className="bg-[#F85339] hover:bg-[#d84734] text-white p-3 rounded-full shadow-lg transition"
+          >
+            {isPlaying ? <FaPause /> : <FaPlay />}
+          </button>
+          <span className="text-gray-800">Playing {audiobook.title}</span>
           <MdVolumeUp className="text-gray-600 text-xl" />
         </div>
       </div>

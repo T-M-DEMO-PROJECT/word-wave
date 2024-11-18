@@ -31,29 +31,37 @@ function Navbar() {
 
   return (
     <nav className="bg-blue-500 text-white p-4">
-      <ul className="flex space-x-4">
-        <li><Link to="/">Home</Link></li>
-        <li><Link to="/library">Library</Link></li>
-        <li><Link to="/profile">Profile</Link></li>
-        <li><Link to="/streaks">Streaks</Link></li>
-        <li><Link to="/vocabulary">Vocabulary</Link></li>
+      <div className="flex justify-between items-center">
+        {/* WordWave Logo or App Name */}
+        <Link to="/" className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
+          WordWave
+        </Link>
 
-        {user ? (
-          <li>
-            <button
-              onClick={handleLogout}
-              className="text-white bg-red-500 p-2 rounded"
-            >
-              Logout
-            </button>
-          </li>
-        ) : (
-          <>
-            <li><Link to="/signup">Sign Up</Link></li>
-            <li><Link to="/login">Login</Link></li>
-          </>
-        )}
-      </ul>
+        {/* Navbar Links */}
+        <ul className="flex space-x-4">
+          <li><Link to="/">Home</Link></li>
+          <li><Link to="/library">Library</Link></li>
+          <li><Link to="/profile">Profile</Link></li>
+          <li><Link to="/streaks">Streaks</Link></li>
+          <li><Link to="/vocabulary">Vocabulary</Link></li>
+
+          {user ? (
+            <li>
+              <button
+                onClick={handleLogout}
+                className="text-white bg-gradient-to-r from-red-500 to-pink-600 hover:from-pink-500 hover:to-red-500 p-3 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
+              >
+                Logout
+              </button>
+            </li>
+          ) : (
+            <>
+              <li><Link to="/signup">Sign Up</Link></li>
+              <li><Link to="/login">Login</Link></li>
+            </>
+          )}
+        </ul>
+      </div>
     </nav>
   );
 }

@@ -21,6 +21,19 @@ const AudioControls = ({
             {isPlaying ? <FaPause /> : <FaPlay />}
           </button>
 
+          {/* Audio Element */}
+          <audio 
+  controls
+  onTimeUpdate={() => currentTime(audio.currentTime)}
+  onEnded={() => {
+    isPlaying(false);
+    currentTime(0);
+  }}
+>
+            <source src="https://savefiles.org/secure/uploads/22831?shareable_link=552" type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+
           {/* Progress Bar */}
           <div className="flex-1 flex items-center gap-3">
             <span className="text-sm">{formatTime(currentTime)}</span>
@@ -64,4 +77,4 @@ const AudioControls = ({
       </div>
     </div>
   );
-}; 
+};

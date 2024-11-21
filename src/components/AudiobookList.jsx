@@ -47,7 +47,7 @@ const AudiobookList = () => {
           narrator: book.narrator || 'Unknown Narrator'
         }));
 
-        setAudiobooks(transformedData);
+        setAudiobooks(data);
       } catch (error) {
         console.error('Error fetching audiobooks:', error);
         setError('Failed to load audiobooks. Please try again later.');
@@ -135,7 +135,7 @@ const AudiobookList = () => {
                 {/* Book Cover with error handling */}
                 <div className="relative aspect-[2/3] overflow-hidden">
                   <img
-                    src={book.coverUrl || fallbackCover}
+                    src={book.coverImage || fallbackCover}
                     alt={book.title}
                     onError={handleImageError}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
@@ -169,7 +169,7 @@ const AudiobookList = () => {
 
                   {/* Action Button */}
                   <Link 
-                    to={`/audiobook/${book.id}`}
+                    to={`/audiobook-detail?bookId=${book.id}`}
                     className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-xl flex items-center justify-center transition-colors"
                   >
                     {book.progress > 0 ? <FaPlay className="mr-2" /> : <FaPlay className="mr-2" />}

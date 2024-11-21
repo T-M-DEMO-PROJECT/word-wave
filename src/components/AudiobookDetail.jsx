@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { FaPlay, FaPause, FaArrowLeft, FaHeart, FaRegHeart, FaForward, FaBackward, FaStar, FaArrowUp, FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -6,6 +6,8 @@ import { BiTime, BiShare, BiComment } from 'react-icons/bi';
 import { BsBookmarkPlus, BsBookmarkFill, BsDownload, BsSpeedometer } from 'react-icons/bs';
 import { MdVolumeUp, MdVolumeMute } from 'react-icons/md';
 import { useSwipeable } from 'react-swipeable';
+import { audioService } from '../services/audioService';
+import sampleAudio from '../assets/audio/audio-file.mp3';
 
 const PlaybackSpeedControl = ({ playbackSpeed, setPlaybackSpeed }) => {
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
@@ -284,6 +286,12 @@ const AudiobookDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
+  // Add this check at the start of your component
+  if (!id) {
+    navigate('/dashboard');
+    return null;
+  }
+
   // All state definitions
   const [audiobook, setAudiobook] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -358,58 +366,47 @@ const AudiobookDetail = () => {
   // Update your fetchAudiobookDetails function to include chapter data
   useEffect(() => {
     const fetchAudiobookDetails = async () => {
+      setIsLoading(true);
       try {
-        // Simulated API call
-        const data = {
-          id: id,
-          title: "The Great Gatsby",
-          author: "F. Scott Fitzgerald",
-          coverImage: "https://via.placeholder.com/300x400",
-          description: "The Great Gatsby is a 1925 novel by American writer F. Scott Fitzgerald...",
-          duration: "4:25:30",
-          progress: 35,
-          chapters: [
-            {
-              title: "Chapter 1: The Beginning",
-              duration: "30:15",
-              progress: 100
-            },
-            {
-              title: "Chapter 2: The Encounter",
-              duration: "25:45",
-              progress: 75
-            },
-            {
-              title: "Chapter 3: The Party",
-              duration: "35:20",
-              progress: 0
-            },
-            {
-              title: "Chapter 4: The Revelation",
-              duration: "28:30",
-              progress: 0
-            }
-          ]
-        };
-        setAudiobook(data);
+        // If using a generated ID, you might need to parse it
+        const bookIndex = id.startsWith('book-') ? parseInt(id.split('-')[1]) - 1 : null;
         
-        // Set initial chapter
-        if (data.chapters && data.chapters.length > 0) {
-          setCurrentChapter({
-            number: 1,
-            title: data.chapters[0].title,
-            startTime: 0,
-            endTime: parseDuration(data.chapters[0].duration)
-          });
+        const response = await fetch('https://wordwave-app-backend.onrender.com/audiobooks');
+        const data = await response.json();
+        
+        // Find the correct book either by ID or index
+        const book = bookIndex !== null ? data[bookIndex] : data.find(b => b._id === id);
+        
+        if (!book) {
+          throw new Error('Book not found');
         }
+
+        const transformedData = {
+          id: id,
+          title: book.title,
+          author: book.author,
+          narrator: book.narrator,
+          coverImage: book.coverImage || "https://via.placeholder.com/300x400",
+          description: book.description || "No description available",
+          duration: typeof book.duration === 'number' ? `${book.duration}:00` : book.duration || "0:00",
+          progress: book.progress || 0,
+          genre: book.genre || "Unknown",
+          audioUrl: book.audioUrl || sampleAudio // Fallback to sample audio if no URL provided
+        };
+
+        setAudiobook(transformedData);
       } catch (error) {
-        console.error('Error fetching audiobook details:', error);
+        console.error('Error:', error);
+        setError('Failed to load audiobook details');
+        setAudiobook(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchAudiobookDetails();
+    if (id) {
+      fetchAudiobookDetails();
+    }
   }, [id]);
 
   // Add modal components
@@ -593,18 +590,24 @@ const AudiobookDetail = () => {
   );
 
   // Audio control functions
-  const togglePlayPause = useCallback(() => {
-    setIsPlaying(prev => !prev);
-  }, []);
+  const togglePlayPause = useCallback(async () => {
+    try {
+      if (isPlaying) {
+        audioService.pause();
+        setIsPlaying(false);
+      } else {
+        await audioService.play(audiobook.audioUrl);
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('Error toggling audio:', error);
+    }
+  }, [isPlaying, audiobook]);
 
   const handleVolumeChange = useCallback((newVolume) => {
+    audioService.setVolume(newVolume);
     setVolume(newVolume);
-    if (newVolume === 0) {
-      setIsMuted(true);
-    } else if (isMuted) {
-      setIsMuted(false);
-    }
-  }, [isMuted]);
+  }, []);
 
   const toggleMute = useCallback(() => {
     setIsMuted(prev => !prev);
@@ -617,8 +620,9 @@ const AudiobookDetail = () => {
   }, [isMuted, volume]);
 
   const handleSeek = useCallback((time) => {
-    setCurrentTime(Math.min(Math.max(0, time), parseDuration(audiobook?.duration || "0:00")));
-  }, [audiobook]);
+    audioService.seek(time);
+    setCurrentTime(time);
+  }, []);
 
   const skipForward = useCallback(() => {
     setCurrentTime(prev => Math.min(prev + 15, parseDuration(audiobook?.duration || "0:00")));
@@ -668,6 +672,63 @@ const AudiobookDetail = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Add cleanup
+  useEffect(() => {
+    const handleTimeUpdate = () => {
+      setCurrentTime(audioService.getCurrentTime());
+    };
+
+    const handleAudioEnded = () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+    };
+
+    audioService.audio.addEventListener('timeupdate', handleTimeUpdate);
+    audioService.audio.addEventListener('ended', handleAudioEnded);
+
+    return () => {
+      audioService.audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audioService.audio.removeEventListener('ended', handleAudioEnded);
+      audioService.cleanup();
+    };
+  }, []);
+
+  const testAudioPlayback = async () => {
+    try {
+      if (isPlaying) {
+        audioService.pause();
+        setIsPlaying(false);
+      } else {
+        console.log('Playing audio from:', sampleAudio); // Debug log
+        await audioService.play(sampleAudio);
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('Audio playback error:', error);
+    }
+  };
+
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
+
+  if (!audiobook) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0F] text-white flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold">Audiobook Not Found</h2>
+          <p className="text-gray-400">The audiobook you're looking for doesn't exist or was removed.</p>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-xl transition-colors"
+          >
+            Return to Library
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0A0A0F] text-white relative">

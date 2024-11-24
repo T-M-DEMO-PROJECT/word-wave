@@ -1,92 +1,77 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
-import Home from './pages/Home';
+import WordWaveLanding from './pages/LandingPage';
 import Login from './components/Auth/Login';
-import SignUp from './components/Auth/Signup';
-import AudiobookDetail from './components/AudiobookDetail';
-import AudiobookList from './components/AudiobookList';
-import AudiobookPage from './components/AudiobookPage';
-import DailyVocabulary from './components/DailyVocabulary';
-import UserProfile from './components/UserProfile/UserProfile';
+import Signup from './components/Auth/Signup';
 import Dashboard from './components/Dashboard/Dashboard';
+import AudiobookList from './components/AudiobookList';
+import AudiobookPlayer from './components/AudiobookPlayer';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
+import DailyVocabulary from './components/DailyVocabulary';
+import Streaks from './pages/Streaks';
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <WordWaveLanding />,
+    errorElement: <ErrorBoundary />
+  },
+  {
+    path: '/login',
+    element: <Login />,
+    errorElement: <ErrorBoundary />
+  },
+  {
+    path: '/signup',
+    element: <Signup />,
+    errorElement: <ErrorBoundary />
+  },
+  {
+    path: '/dashboard',
+    element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+    errorElement: <ErrorBoundary />
+  },
+  {
+    path: '/audiobooks',
+    element: <AudiobookList />,
+    errorElement: <ErrorBoundary />
+  },
+  {
+    path: '/vocabulary',
+    element: <DailyVocabulary />,
+    errorElement: <ErrorBoundary />
+  },
+  {
+    path: '/streaks',
+    element: <Streaks />,
+    errorElement: <ErrorBoundary />
+},
+  {
+    path: '/audiobook/:id',
+    element: <ProtectedRoute><AudiobookPlayer /></ProtectedRoute>,
+    errorElement: <ErrorBoundary />
+  },
+  {
+    path: '*',
+    element: (
+      <div className="min-h-screen bg-[#0A0A0F] text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
+          <a 
+            href="/dashboard" 
+            className="text-purple-400 hover:text-purple-300"
+          >
+            Return to Dashboard
+          </a>
+        </div>
+      </div>
+    ),
+    errorElement: <ErrorBoundary />
+  }
+]);
 
 function App() {
-  const router = createBrowserRouter(
-    [
-      {
-        path:"/",
-        element: <LandingPage/>,
-        errorElement: <ErrorBoundary />
-      },
-      {
-        path: "/home",
-        element: <Home />,
-        errorElement: <ErrorBoundary />
-      },
-      {
-        path:"login",
-        element: <Login/>,
-        errorElement: <ErrorBoundary />
-      },
-      {
-        path:"signup",
-        element: <SignUp/>,
-        errorElement: <ErrorBoundary />
-      },
-      {
-        path:"dashboard",
-        element: (
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        ),
-        errorElement: <ErrorBoundary />
-      },
-      {
-        path:"audiobook-detail",
-        element: <AudiobookDetail/>,
-        errorElement: <ErrorBoundary />
-      },
-      {
-        path:"audiobook-list",
-        element: <AudiobookList/>,
-        errorElement: <ErrorBoundary />
-      },
-      {
-        path:"audiobook-page",
-        element: <AudiobookPage/>,
-        errorElement: <ErrorBoundary />
-      },
-      {
-        path:"daily-vocabulary",
-        element: <DailyVocabulary/>,
-        errorElement: <ErrorBoundary />
-      },
-      {
-        path:"profile",
-        element: (
-          <ProtectedRoute>
-            <UserProfile/>
-          </ProtectedRoute>
-        ),
-        errorElement: <ErrorBoundary />
-      },
-    ],
-    {
-      future: {
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-        v7_fetcherPersist: true,
-        v7_normalizeFormMethod: true,
-        v7_partialHydration: true,
-        v7_skipActionErrorRevalidation: true
-      }
-    }
-  );
-
-  return <RouterProvider router={router} />
+  return <RouterProvider router={router} />;
 }
 
 export default App;

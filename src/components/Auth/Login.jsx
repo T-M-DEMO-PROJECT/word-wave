@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from 'axios';
@@ -25,40 +24,22 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      console.log('Sending login request...');
-
       const response = await axios.post(
         'https://wordwave-app-backend.onrender.com/users/login',
-        {
-          email,
-          password
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+        { email, password }
       );
 
       console.log('Login response:', response.data);
 
       if (response.data && response.data.accessToken) {
         localStorage.setItem('token', response.data.accessToken);
-        navigate("/dashboard");
+        navigate('/dashboard');
       } else {
-        console.error('No access token in response:', response.data);
-        setError("Invalid login response from server");
+        throw new Error('No access token received');
       }
-      
     } catch (err) {
-      console.error("Login error:", err);
-      if (err.response) {
-        setError(err.response.data.message || 'Invalid credentials');
-      } else if (err.request) {
-        setError("No response from server. Please try again.");
-      } else {
-        setError("Failed to make request. Please try again.");
-      }
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }

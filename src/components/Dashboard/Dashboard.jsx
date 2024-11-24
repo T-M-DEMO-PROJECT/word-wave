@@ -3,47 +3,79 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Logout from '../Auth/Logout';
 import axios from 'axios';
+import { FaHeadphones, FaBook, FaArrowRight } from 'react-icons/fa';
+
+const api = axios.create({
+  baseURL: 'https://wordwave-app-backend.onrender.com'
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+const LoadingSkeleton = () => (
+  <div className="min-h-screen bg-[#0A0A0F] text-white animate-pulse">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      {/* Skeleton shapes */}
+      <div className="h-32 bg-white/5 rounded-2xl"></div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="h-24 bg-white/5 rounded-xl"></div>
+        <div className="h-24 bg-white/5 rounded-xl"></div>
+        <div className="h-24 bg-white/5 rounded-xl"></div>
+      </div>
+    </div>
+  </div>
+);
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(true);
-  const [userData, setUserData] = useState({
-    name: 'Reader',
-    booksRead: 0,
-    wordsLearned: 0,
-    streak: 0
-  });
+  const [userData, setUserData] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [currentBooks, setCurrentBooks] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('No token found');
-        }
+        
+        // Update these endpoints to match your backend
+        const [userResponse, booksResponse] = await Promise.all([
+          axios.get('https://wordwave-app-backend.onrender.com/users/profile', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }),
+          axios.get('https://wordwave-app-backend.onrender.com/audiobooks/in-progress', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+        ]);
 
-        const response = await axios.get('https://wordwave-app-backend.onrender.com/users/profile', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        console.log('API Response:', response.data); // Debug log
-
+        setUserData(userResponse.data);
+        setCurrentBooks(booksResponse.data);
+      } catch (error) {
+        console.error('Dashboard data fetch error:', error);
+        // Set default values on error
         setUserData({
-          name: response.data.name || 'Reader',
-          booksRead: response.data.booksRead || 0,
-          wordsLearned: response.data.wordsLearned || 0,
-          streak: response.data.streak || 0
+          name: 'Reader',
+          booksRead: 3,
+          wordsLearned: 20,
+          streak: 10
         });
-      } catch (err) {
-        console.error('Failed to fetch user data:', err);
-        // Keep default values if fetch fails
+        setCurrentBooks([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchUserData();
+    fetchDashboardData();
   }, []);
 
   const showAchievementNotification = (achievement) => {
@@ -60,11 +92,7 @@ const Dashboard = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
-        <div className="text-purple-500">Loading...</div>
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   return (
@@ -84,11 +112,10 @@ const Dashboard = () => {
 
       {/* Navbar */}
       <nav className="bg-black/40 backdrop-blur-xl border-b border-white/5">
-        <div className="container mx-auto flex justify-between items-center p-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center p-4">
           <motion.h1 
-            className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent"
+            className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent"
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
           >
             WordWave
           </motion.h1>
@@ -97,141 +124,177 @@ const Dashboard = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 space-y-6">
-        {/* Welcome Section with New User Message */}
+      <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        {/* Hero Section */}
         <motion.section 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-black/40 border border-purple-500/10 rounded-xl p-6"
+          className="bg-gradient-to-br from-purple-500/10 via-fuchsia-500/10 to-pink-500/10 rounded-2xl p-8 border border-white/5"
         >
-          <h2 className="text-2xl font-bold mb-4">
-            Welcome to WordWave, <span className="text-purple-400">{userData.name}</span>!
+          <h2 className="text-4xl font-bold mb-4">
+            Hey <span className="bg-gradient-to-r from-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
+              {userData.name}
+            </span> 👋
           </h2>
-          {isNewUser && (
-            <div className="mb-6 text-gray-300">
-              <p className="mb-4">Let's get started with your learning journey:</p>
-              <ul className="space-y-2 list-disc list-inside text-purple-300">
-                <li>Browse our collection of audiobooks</li>
-                <li>Start with beginner-friendly content</li>
-                <li>Track your daily vocabulary progress</li>
-                <li>Set your learning goals</li>
-              </ul>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-4">
-            <Link 
-              to="/audiobook-list" 
-              className="px-6 py-3 bg-purple-500 rounded-full hover:bg-purple-600 transition-colors flex items-center gap-2"
-            >
-              <span>Start Reading</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-            <Link 
-              to="/daily-vocabulary" 
-              className="px-6 py-3 bg-black/50 border border-purple-500/20 rounded-full hover:bg-black/70 transition-colors"
-            >
-              Daily Practice
-            </Link>
-          </div>
+          <p className="text-gray-400 text-lg">Ready to level up your reading game?</p>
         </motion.section>
 
-        {/* Getting Started Section for New Users */}
-        {isNewUser && (
-          <motion.section 
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-gradient-to-br from-purple-500/10 to-black/40 border border-purple-500/10 rounded-xl p-6"
+            className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-purple-500/10 hover:border-purple-500/20 transition-all group"
           >
-            <h2 className="text-xl font-bold mb-6">Quick Start Guide</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-3">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <h3 className="font-semibold">Choose a Book</h3>
-                <p className="text-gray-400 text-sm">Browse our collection and find the perfect book for your level.</p>
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-purple-500/10 rounded-lg group-hover:scale-110 transition-transform">
+                <svg className="w-6 h-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
               </div>
-              <div className="space-y-3">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                  </svg>
-                </div>
-                <h3 className="font-semibold">Listen & Learn</h3>
-                <p className="text-gray-400 text-sm">Follow along with audio narration and interactive transcripts.</p>
-              </div>
-              <div className="space-y-3">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h3 className="font-semibold">Track Progress</h3>
-                <p className="text-gray-400 text-sm">Monitor your learning journey and vocabulary growth.</p>
+              <div>
+                <p className="text-gray-400 text-sm">Books Read</p>
+                <h3 className="text-2xl font-bold">{userData.booksRead}</h3>
               </div>
             </div>
-          </motion.section>
-        )}
+          </motion.div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-black/40 border border-white/5 rounded-xl p-6 hover:border-purple-500/20 transition-colors"
+            className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-fuchsia-500/10 hover:border-fuchsia-500/20 transition-all group"
           >
-            <h3 className="text-gray-400 mb-2">Books Read</h3>
-            <p className="text-2xl font-bold">{userData.booksRead}</p>
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-fuchsia-500/10 rounded-lg group-hover:scale-110 transition-transform">
+                <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Streak</p>
+                <h3 className="text-2xl font-bold">{userData.streak} days 🔥</h3>
+              </div>
+            </div>
           </motion.div>
+
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-black/40 border border-white/5 rounded-xl p-6 hover:border-purple-500/20 transition-colors"
+            className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-pink-500/10 hover:border-pink-500/20 transition-all group"
           >
-            <h3 className="text-gray-400 mb-2">Words Learned</h3>
-            <p className="text-2xl font-bold">{userData.wordsLearned}</p>
-          </motion.div>
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-black/40 border border-white/5 rounded-xl p-6 hover:border-purple-500/20 transition-colors"
-          >
-            <h3 className="text-gray-400 mb-2">Reading Streak</h3>
-            <p className="text-2xl font-bold">{userData.streak} days</p>
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-pink-500/10 rounded-lg group-hover:scale-110 transition-transform">
+                <svg className="w-6 h-6 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Words Learned</p>
+                <h3 className="text-2xl font-bold">{userData.wordsLearned} ✨</h3>
+              </div>
+            </div>
           </motion.div>
         </div>
 
-        {/* Continue Reading Section */}
+        {/* Current Books */}
         <motion.section 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-black/40 border border-white/5 rounded-xl p-6"
+          transition={{ delay: 0.3 }}
+          className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 border border-white/5"
         >
-          <h2 className="text-xl font-bold mb-4">Continue Reading</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Placeholder for books */}
-            <div className="bg-black/60 rounded-lg p-4">
-              <div className="aspect-[3/4] bg-gray-800 rounded-lg mb-4"></div>
-              <h3 className="font-medium mb-2">Sample Book</h3>
-              <div className="w-full bg-gray-800 rounded-full h-2">
-                <div className="bg-purple-500 h-2 rounded-full w-1/2"></div>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Continue Reading</h2>
+            <Link 
+              to="/audiobooks"
+              className="text-purple-400 hover:text-purple-300 transition-colors"
+            >
+              View All →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {currentBooks.length > 0 ? (
+              currentBooks.map((book) => (
+                <Link 
+                  key={book._id}
+                  to={`/audiobook/${book._id}`}
+                  className="group relative overflow-hidden rounded-xl aspect-[3/4] hover:scale-105 transition-all duration-300"
+                >
+                  <img 
+                    src={book.coverImage} 
+                    alt={book.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.src = '/fallback-image.jpg';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 flex flex-col justify-end opacity-0 group-hover:opacity-100">
+                    <h3 className="font-medium mb-2">{book.title}</h3>
+                    <div className="w-full bg-gray-800 rounded-full h-2">
+                      <div 
+                        className="bg-purple-500 h-2 rounded-full" 
+                        style={{ width: `${book.progress || 0}%` }}
+                      />
+                    </div>
+                    <p className="text-sm text-gray-400 mt-2">{book.progress}% completed</p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-400 py-8">
+                <p>The Great Gatsby.</p>
+                <Link 
+                  to="/audiobooks"
+                  className="text-purple-400 hover:text-purple-300 mt-2 inline-block"
+                >
+                  Start reading now →
+                </Link>
               </div>
-              <p className="text-sm text-gray-400 mt-2">50% completed</p>
-            </div>
+            )}
           </div>
         </motion.section>
+
+        {/* Navigation Buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Link 
+            to="/audiobooks"
+            className="p-6 bg-black/40 backdrop-blur-sm rounded-xl border border-purple-500/10 hover:border-purple-500/20 transition-all group flex items-center justify-between"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-500/10 rounded-lg group-hover:scale-110 transition-transform">
+                <FaHeadphones className="text-2xl text-purple-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Audiobooks</h3>
+                <p className="text-gray-400">Explore our collection</p>
+              </div>
+            </div>
+            <FaArrowRight className="text-purple-400" />
+          </Link>
+
+          <Link 
+            to="/vocabulary"
+            className="p-6 bg-black/40 backdrop-blur-sm rounded-xl border border-pink-500/10 hover:border-pink-500/20 transition-all group flex items-center justify-between"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-pink-500/10 rounded-lg group-hover:scale-110 transition-transform">
+                <FaBook className="text-2xl text-pink-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Daily Vocabulary</h3>
+                <p className="text-gray-400">Learn new words</p>
+              </div>
+            </div>
+            <FaArrowRight className="text-pink-400" />
+          </Link>
+        </div>
       </main>
     </div>
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
@@ -9,54 +8,62 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [admin, setAdmin] = useState(false);
+  const [author, setAuthor] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true); // Assuming you have a loading state to indicate progress
+  setError(null); // Clear any previous errors
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const response = await axios.post('https://wordwave-app-backend.onrender.com/users/register', 
-        {
-          name,
-          email,
-          password,
-          admin: admin.toString()
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
+  try {
+    const response = await axios.post('https://wordwave-app-backend.onrender.com/users/register', 
+      {
+        name,
+        email,
+        password,
+        author: author.toString() // Ensure admin is sent as a string
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
         }
-      );
-
-      console.log("Sign up successful:", response.data);
-      navigate("/login");
-      
-    } catch (err) {
-      console.error("Sign up error details:", err.response?.data);
-      
-      if (err.response) {
-        const errorMessage = err.response.data.message || err.response.data.error || 'Failed to sign up';
-        setError(errorMessage);
-      } else if (err.request) {
-        setError("No response from server. Please try again.");
-      } else {
-        setError("Failed to make request. Please try again.");
       }
-    } finally {
-      setIsLoading(false);
+    );
+
+    console.log("Sign up successful:", response.data);
+    navigate("/login"); // Navigate to login on success
+
+  } catch (err) {
+    console.error("Sign up error details:", err); // Log the entire error object
+
+    // Check if the error response exists
+    if (err.response) {
+      // Log the details for debugging
+      console.log("Error details:", err.response.data.details); // Log the details array
+
+      // Set a user-friendly error message
+      const errorMessage = err.response.data.message || 'Failed to sign up';
+
+      // If there are specific details, handle them
+      if (err.response.data.details && Array.isArray(err.response.data.details)) {
+        err.response.data.details.forEach(detail => {
+          // Assuming each detail has a message property
+          setError(prev => prev ? `${prev} ${detail.message}` : detail.message); // Append messages if multiple
+        });
+      } else {
+        setError(errorMessage); // Fallback to general error message
+      }
+    } else if (err.request) {
+      setError("No response from server. Please try again."); // Handle no response
+    } else {
+      setError("Failed to make request. Please try again."); // Handle other errors
     }
-  };
+  } finally {
+    setIsLoading(false); // Stop loading regardless of success or failure
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500">
@@ -133,13 +140,13 @@ const SignUp = () => {
         <div className="mb-4 flex items-center">
           <input
             type="checkbox"
-            id="admin"
-            checked={admin}
-            onChange={(e) => setAdmin(e.target.checked)}
+            id="author"
+            checked={author}
+            onChange={(e) => setAuthor(e.target.checked)}
             className="mr-2 text-pink-500 focus:ring-pink-500"
           />
-          <label htmlFor="admin" className="text-sm font-medium">
-            Register as Admin
+          <label htmlFor="author" className="text-sm font-medium">
+            Register as Author
           </label>
         </div>
 
